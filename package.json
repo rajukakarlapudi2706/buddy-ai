@@ -1,0 +1,48 @@
+{
+  "name": "buddy-ai",
+  "version": "1.0.0",
+  "description": "Dad's digital presence — a personal AI companion for your child",
+  "main": "electron/main.js",
+  "scripts": {
+    "dev": "concurrently \"vite\" \"wait-on http://localhost:5173 && electron .\"",
+    "build": "vite build && electron-builder",
+    "build:win": "vite build && electron-builder --win",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.24.0",
+    "electron-store": "^8.1.0",
+    "node-fetch": "^3.3.2"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.2.1",
+    "concurrently": "^8.2.2",
+    "electron": "^29.0.0",
+    "electron-builder": "^24.9.1",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "vite": "^5.1.0",
+    "wait-on": "^7.2.0"
+  },
+  "build": {
+    "appId": "com.dad.buddy-ai",
+    "productName": "Buddy",
+    "icon": "public/icon.png",
+    "win": {
+      "target": "nsis",
+      "icon": "public/icon.png"
+    },
+    "nsis": {
+      "oneClick": true,
+      "allowToChangeInstallationDirectory": false,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Buddy - Your Pal"
+    },
+    "files": ["dist/**/*", "electron/**/*", "public/**/*"],
+    "directories": {
+      "buildResources": "public",
+      "output": "release"
+    }
+  }
+}

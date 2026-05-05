@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.vite/
+*.log
+.env
+.env.local
+.DS_Store
+.idea/
+.vscode/
+*.local
+npm-debug.log*
+package-lock.json
