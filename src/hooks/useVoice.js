@@ -35,6 +35,9 @@ export function useTTS() {
 
   // ElevenLabs voice clone (used if configured)
   const speakElevenLabs = useCallback(async (text, elevenKey, elevenVoice) => {
+    const cleanText = cleanTextForSpeech(text);
+    if (!cleanText) return;
+
     try {
       const res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${elevenVoice}`, {
         method: 'POST',
@@ -43,7 +46,7 @@ export function useTTS() {
           'Content-Type':  'application/json',
         },
         body: JSON.stringify({
-          text,
+          text: cleanText,
           model_id: 'eleven_monolingual_v1',
           voice_settings: { stability: 0.5, similarity_boost: 0.8 },
         }),
@@ -57,14 +60,55 @@ export function useTTS() {
       audio.play();
     } catch (err) {
       console.warn('ElevenLabs failed, using browser TTS:', err);
-      speakBrowser(text); // fallback
+      speakBrowser(cleanText); // fallback
     }
+  }, [cleanTextForSpeech, speakBrowser]);
+
+  // Clean text for more natural speech
+  const cleanTextForSpeech = useCallback((text) => {
+    if (!text) return '';
+
+    return text
+      // Replace common emojis with spoken equivalents
+      .replace(/😊|🙂|😄|😃|😀|😁|😆|🥰|😍|🤗|😘|😙|😚|☺️/g, 'happy')
+      .replace(/😢|😭|😿|😥|😓|😪|😞|😔|😟|😕|🙁|☹️|😣|😖|😫|😩|🥺/g, 'sad')
+      .replace(/😡|😠|😤|😈|👿|💢|👺|🗯️|💥/g, 'angry')
+      .replace(/😴|😪|💤/g, 'sleepy')
+      .replace(/🤔|💭/g, 'thinking')
+      .replace(/👂|🎧|🔊|📣/g, 'listening')
+      .replace(/🗣️|💬|💭/g, 'talking')
+      .replace(/🤗|🤝|👏|🙌|👍|👌|✌️|🤞|🤟|🤘|🤙/g, 'excited')
+      .replace(/⭐|✨|💫|🌟/g, 'star')
+      .replace(/💛|❤️|💙|💜|💚|🧡|🤍|🤎|💖|💕|💓|💗|💘|💝|💞|💟/g, 'love')
+      .replace(/🔥/g, 'fire')
+      .replace(/🎯/g, 'target')
+      .replace(/🎵|🎶|🎼|🎤|🎧|🎸|🥁|🎹|🎺|🎷|🪕|🎻/g, 'music')
+      .replace(/🎨|🖌️|🖍️|🎭/g, 'art')
+      .replace(/🔢|🔤|📚|📖|📓|✏️|📝/g, 'learning')
+      .replace(/🤗/g, 'hug')
+      .replace(/💌/g, 'message')
+      .replace(/🎯/g, 'challenge')
+      .replace(/🧒|👦|👧/g, 'child')
+      .replace(/👨‍💼|👨‍🏫|👨‍💻/g, 'dad')
+      // Remove remaining emojis and symbols
+      .replace(/[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu, '')
+      // Clean up punctuation - reduce multiple punctuation marks
+      .replace(/!+/g, '!')
+      .replace(/\?+/g, '?')
+      .replace(/\.+/g, '.')
+      .replace(/,+/g, ',')
+      // Remove excessive whitespace
+      .replace(/\s+/g, ' ')
+      .trim();
   }, []);
 
   // Browser built-in TTS
   const speakBrowser = useCallback((text) => {
+    const cleanText = cleanTextForSpeech(text);
+    if (!cleanText) return;
+
     window.speechSynthesis.cancel();
-    const utter = new SpeechSynthesisUtterance(text);
+    const utter = new SpeechSynthesisUtterance(cleanText);
     utter.voice  = getVoice();
     utter.rate   = 0.92;
     utter.pitch  = 1.05;
@@ -74,7 +118,7 @@ export function useTTS() {
     utter.onerror = () => setSpeaking(false);
     utterRef.current = utter;
     window.speechSynthesis.speak(utter);
-  }, [getVoice]);
+  }, [getVoice, cleanTextForSpeech]);
 
   const speak = useCallback((text) => {
     if (!text) return;
