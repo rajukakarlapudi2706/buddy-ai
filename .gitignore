@@ -9,4 +9,3 @@ dist/
 .vscode/
 *.local
 npm-debug.log*
-package-lock.json
