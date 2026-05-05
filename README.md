@@ -72,8 +72,8 @@ npm install -g vercel
 3. Deploy:
 
 ```bash
-npm run build
-vercel --prod
+npm run vercel-build
+npx --yes vercel@latest --prod
 ```
 
 4. Vercel gives you a URL like `https://buddy-yourname.vercel.app`
